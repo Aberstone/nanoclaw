@@ -1,0 +1,13 @@
+skill: add-anthropic-compatible-env
+version: 1.0.0
+description: Add ANTHROPIC_BASE_URL and ANTHROPIC_MODEL env support for Anthropic-compatible API providers
+core_version: 0.1.0
+adds: []
+modifies:
+  - src/container-runner.ts
+structured:
+  env_additions:
+    - ANTHROPIC_BASE_URL
+    - ANTHROPIC_MODEL
+conflicts: []
+depends: []
