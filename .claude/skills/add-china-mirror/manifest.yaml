@@ -1,0 +1,10 @@
+skill: add-china-mirror
+version: 1.0.0
+description: Add USTC mirror source to container Dockerfile for faster builds in China
+core_version: 0.1.0
+adds: []
+modifies:
+  - container/Dockerfile
+structured: {}
+conflicts: []
+depends: []
