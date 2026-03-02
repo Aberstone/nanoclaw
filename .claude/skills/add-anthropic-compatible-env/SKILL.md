@@ -1,17 +1,21 @@
-# Add Anthropic-Compatible API Environment Variables
+# Add ANTHROPIC_MODEL Environment Variable
 
-Adds support for `ANTHROPIC_BASE_URL` and `ANTHROPIC_MODEL` environment variables to enable using Anthropic-compatible API providers (like OpenRouter, custom proxies, or alternative AI providers that implement the Anthropic API format).
+Adds support for the `ANTHROPIC_MODEL` environment variable to specify custom model names when using third-party or Anthropic-compatible API providers.
+
+## Background
+
+As of NanoClaw v1.1.4+ (commit 51bb329), the main branch supports `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` for third-party model providers. However, it does not support specifying custom model names.
 
 ## Problem
 
-By default, NanoClaw only passes `CLAUDE_CODE_OAUTH_TOKEN` and `ANTHROPIC_API_KEY` to the container agent. This prevents using:
-- Custom API endpoints (proxies, alternative providers)
-- Non-default model names
-- Anthropic-compatible APIs from other providers
+Without `ANTHROPIC_MODEL` support, you cannot:
+- Use non-default model names (e.g., `claude-3-opus` instead of the default)
+- Specify provider-specific model identifiers (e.g., OpenRouter's `anthropic/claude-3-opus`)
+- Test different model versions without code changes
 
 ## Solution
 
-This skill modifies `src/container-runner.ts` to also read and pass `ANTHROPIC_BASE_URL` and `ANTHROPIC_MODEL` from `.env` to the container, enabling full compatibility with any Anthropic-compatible API provider.
+This skill modifies `src/container-runner.ts` to also read and pass `ANTHROPIC_MODEL` from `.env` to the container.
 
 ## Installation
 
@@ -62,21 +66,27 @@ ANTHROPIC_MODEL=kimi-k2.5
 
 ## Technical Details
 
-**Before:**
-```typescript
-function readSecrets(): Record<string, string> {
-  return readEnvFile(['CLAUDE_CODE_OAUTH_TOKEN', 'ANTHROPIC_API_KEY']);
-}
-```
-
-**After:**
+**Main branch (v1.1.4+):**
 ```typescript
 function readSecrets(): Record<string, string> {
   return readEnvFile([
     'CLAUDE_CODE_OAUTH_TOKEN',
     'ANTHROPIC_API_KEY',
     'ANTHROPIC_BASE_URL',
-    'ANTHROPIC_MODEL',
+    'ANTHROPIC_AUTH_TOKEN',
+  ]);
+}
+```
+
+**After applying this skill:**
+```typescript
+function readSecrets(): Record<string, string> {
+  return readEnvFile([
+    'CLAUDE_CODE_OAUTH_TOKEN',
+    'ANTHROPIC_API_KEY',
+    'ANTHROPIC_BASE_URL',
+    'ANTHROPIC_AUTH_TOKEN',
+    'ANTHROPIC_MODEL',  // ← Added by this skill
   ]);
 }
 ```

@@ -1,17 +1,17 @@
-# Intent: Add ANTHROPIC_BASE_URL and ANTHROPIC_MODEL to container secrets
+# Intent: Add ANTHROPIC_MODEL to container secrets
 
 ## What changed
 
-Modified the `readSecrets()` function to include `ANTHROPIC_BASE_URL` and `ANTHROPIC_MODEL` in the list of environment variables read from `.env` and passed to the container.
+Modified the `readSecrets()` function to include `ANTHROPIC_MODEL` in the list of environment variables read from `.env` and passed to the container.
 
 ## Why
 
-By default, NanoClaw only passes `CLAUDE_CODE_OAUTH_TOKEN` and `ANTHROPIC_API_KEY` to containers. This prevents users from:
-- Using custom API endpoints (proxies, alternative providers)
-- Specifying non-default model names
-- Using Anthropic-compatible APIs from other providers (OpenRouter, Alibaba Cloud, etc.)
+As of NanoClaw v1.1.4+ (commit 51bb329), the main branch supports `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` for third-party model providers. However, it does not support specifying custom model names via `ANTHROPIC_MODEL`.
 
-Adding these two variables enables full compatibility with any Anthropic-compatible API provider while maintaining security (variables are passed via stdin, not environment or files).
+This skill adds `ANTHROPIC_MODEL` support, which is essential for:
+- Using non-default model names (e.g., `claude-3-opus`, `claude-sonnet-3-5`)
+- Specifying provider-specific model identifiers (e.g., OpenRouter's `anthropic/claude-3-opus`)
+- Testing different model versions without changing code
 
 ## Invariants
 
@@ -19,19 +19,31 @@ Adding these two variables enables full compatibility with any Anthropic-compati
 - The `readEnvFile()` function is used to read from `data/env/env` (not `process.env`)
 - No other functions or logic in `container-runner.ts` are modified
 - The function signature of `readSecrets()` remains unchanged
+- Maintains compatibility with main branch's existing variables
 
 ## Three-way merge guidance
 
-If the base `readSecrets()` function has changed (e.g., other skills added more variables), merge all variables together in a single array. The order doesn't matter, but keep them alphabetically sorted for readability:
+The main branch (as of 51bb329) includes:
+```typescript
+return readEnvFile([
+  'CLAUDE_CODE_OAUTH_TOKEN',
+  'ANTHROPIC_API_KEY',
+  'ANTHROPIC_BASE_URL',
+  'ANTHROPIC_AUTH_TOKEN',
+]);
+```
+
+This skill adds `ANTHROPIC_MODEL` to that list. If other skills have added more variables, merge them all together:
 
 ```typescript
 function readSecrets(): Record<string, string> {
   return readEnvFile([
+    'CLAUDE_CODE_OAUTH_TOKEN',
     'ANTHROPIC_API_KEY',
     'ANTHROPIC_BASE_URL',
+    'ANTHROPIC_AUTH_TOKEN',
     'ANTHROPIC_MODEL',
-    'CLAUDE_CODE_OAUTH_TOKEN',
-    // ... any other variables from base or other skills
+    // ... any other variables from other skills
   ]);
 }
 ```
